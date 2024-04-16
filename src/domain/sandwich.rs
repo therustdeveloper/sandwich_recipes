@@ -1,5 +1,8 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
+// Sandwich Id
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SandwichId(Option<String>);
 
@@ -21,6 +24,7 @@ impl TryFrom<String> for SandwichId {
     }
 }
 
+// Sandwich Name
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SandwichName(String);
 
@@ -42,6 +46,7 @@ impl TryFrom<String> for SandwichName {
     }
 }
 
+// Sandwich Ingredients
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SandwichIngredients(Vec<String>);
 
@@ -114,8 +119,24 @@ impl Sandwich {
     }
 }
 
+impl fmt::Display for Sandwich {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} - {}",
+            match &self.id.0 {
+                Some(s) => s,
+                None => "",
+            },
+            self.name.0
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::tests::test_utils::shared::SANDWICH_TYPE;
+
     use super::*;
 
     const SANDWICH_ID: &str = "sand-id";
@@ -129,12 +150,16 @@ mod tests {
             SANDWICH_ID.to_string(),
             SANDWICH_NAME.to_string(),
             ingredients.clone(),
-            SandwichType::Meat,
+            SANDWICH_TYPE,
         )
         .unwrap();
 
         assert_eq!(hot_dog.id().value().as_ref().unwrap(), SANDWICH_ID);
-        assert_eq!(hot_dog.name.value(), SANDWICH_NAME);
+        assert_eq!(
+            hot_dog.name,
+            SandwichName::try_from(SANDWICH_NAME.to_string()).unwrap()
+        );
+
         assert_eq!(ingredients.len(), hot_dog.ingredients.value().len());
 
         for (i, exp_ingr) in ingredients.iter().enumerate() {
@@ -144,11 +169,12 @@ mod tests {
 
     #[test]
     fn should_fail_without_a_name_or_ingredients() {
+        // without name
         let err_sandwich = Sandwich::new(
             "".to_string(),
             "".to_string(),
             vec!["Wurst".to_string(), "Ketchup".to_string()],
-            SandwichType::Meat,
+            SANDWICH_TYPE,
         );
 
         assert_eq!(err_sandwich.is_err(), true);
@@ -159,7 +185,7 @@ mod tests {
             SANDWICH_ID.to_string(),
             SANDWICH_NAME.to_string(),
             vec![],
-            SandwichType::Meat,
+            SANDWICH_TYPE,
         );
 
         assert_eq!(err_sandwich.is_err(), true);

@@ -7,7 +7,7 @@ pub enum CreateError {
     Conflict(String),
 }
 
-// port / use case
+// this is my port / use case
 pub fn create_sandwich<'a>(
     name: &'a str,
     ingredients: &'a Vec<&str>,
@@ -30,11 +30,12 @@ pub fn create_sandwich<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::helpers::string_vec_to_vec_str;
     use crate::tests::test_utils::shared::{
         assert_on_sandwich, stub_ingredients, stub_sandwich, SANDWICH_NAME, SANDWICH_TYPE,
     };
+
+    use super::*;
 
     #[test]
     fn should_create_the_expected_sandwich() {

@@ -1,6 +1,6 @@
-mod create_sandwich;
-mod delete_one_sandwich;
-mod find_all_sandwiched;
-mod find_one_sandwich;
+pub(crate) mod create_sandwich;
+pub(crate) mod delete_one_sandwich;
+pub(crate) mod find_all_sandwiches;
+pub(crate) mod find_one_sandwich;
 pub mod sandwich;
-mod update_sandwich;
+pub(crate) mod update_sandwich;
