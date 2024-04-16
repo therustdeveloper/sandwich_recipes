@@ -56,7 +56,7 @@ impl TryFrom<Vec<String>> for SandwichIngredients {
 
     fn try_from(ingredients: Vec<String>) -> Result<Self, Self::Error> {
         if ingredients.is_empty() {
-            Err("Any sandwich must have a least one ingredient")
+            Err("Any sandwich must have at least one ingredient")
         } else {
             Ok(Self(ingredients))
         }
@@ -134,7 +134,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(hot_dog.id().value().as_ref().unwrap(), SANDWICH_ID);
-        assert_eq!(hot_dog.name, SANDWICH_NAME);
+        assert_eq!(hot_dog.name.value(), SANDWICH_NAME);
         assert_eq!(ingredients.len(), hot_dog.ingredients.value().len());
 
         for (i, exp_ingr) in ingredients.iter().enumerate() {
@@ -165,7 +165,7 @@ mod tests {
         assert_eq!(err_sandwich.is_err(), true);
         assert_eq!(
             err_sandwich.unwrap_err(),
-            "Any sandwich must have at least an ingredient"
+            "Any sandwich must have at least one ingredient"
         );
     }
 }
