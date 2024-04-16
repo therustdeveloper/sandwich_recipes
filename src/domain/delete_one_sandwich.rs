@@ -16,10 +16,9 @@ mod tests {
 
     #[test]
     fn should_delete_a_sandwich() {
-
         match delete_one_sandwich(SANDWICH_ID) {
-            Ok(()) => {},
-            _ => unreachable!()
+            Ok(()) => {}
+            _ => unreachable!(),
         }
     }
 }

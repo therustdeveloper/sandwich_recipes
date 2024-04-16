@@ -8,19 +8,33 @@ pub enum CreateError {
 }
 
 // port / use case
-pub fn create_sandwich<'a>(name: &'a str, ingredients: &'a Vec<&str>, sandwich_type: &SandwichType) -> Result<Sandwich, CreateError> {
-    let ingredients = ingredients.iter().map(|item| item.to_string()).collect::<Vec<String>>();
-    let sandwich = Sandwich::new(String::from(""), name.to_string(), ingredients, sandwich_type.clone())
-        .map_err(|e| CreateError::InvalidData(e))?;
+pub fn create_sandwich<'a>(
+    name: &'a str,
+    ingredients: &'a Vec<&str>,
+    sandwich_type: &SandwichType,
+) -> Result<Sandwich, CreateError> {
+    let ingredients = ingredients
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>();
+    let sandwich = Sandwich::new(
+        String::from(""),
+        name.to_string(),
+        ingredients,
+        sandwich_type.clone(),
+    )
+    .map_err(|e| CreateError::InvalidData(e))?;
 
     Ok(sandwich)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::helpers::string_vec_to_vec_str;
-    use crate::tests::test_utils::shared::{assert_on_sandwich, SANDWICH_NAME, SANDWICH_TYPE, stub_ingredients, stub_sandwich};
     use super::*;
+    use crate::helpers::string_vec_to_vec_str;
+    use crate::tests::test_utils::shared::{
+        assert_on_sandwich, stub_ingredients, stub_sandwich, SANDWICH_NAME, SANDWICH_TYPE,
+    };
 
     #[test]
     fn should_create_the_expected_sandwich() {

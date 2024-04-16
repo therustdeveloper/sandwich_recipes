@@ -13,20 +13,25 @@ pub mod shared {
 
     pub fn assert_on_sandwich(expected: Sandwich, actual: &Sandwich, assert_on_id: bool) {
         if assert_on_id {
-            assert_eq!(actual.id().value().as_ref().unwrap(), expected.id().value().as_ref().unwrap());
+            assert_eq!(
+                actual.id().value().as_ref().unwrap(),
+                expected.id().value().as_ref().unwrap()
+            );
         }
         assert_eq!(actual.name().value(), expected.name().value());
         assert_on_ingredients(expected.ingredients().value(), actual.ingredients().value());
     }
 
-    pub fn assert_on_ingredients(expected_ingredients: &Vec<String>, actual_ingredients: &Vec<String>) {
+    pub fn assert_on_ingredients(
+        expected_ingredients: &Vec<String>,
+        actual_ingredients: &Vec<String>,
+    ) {
         assert_eq!(expected_ingredients.len(), actual_ingredients.len());
 
         for (i, exp_ingr) in expected_ingredients.iter().enumerate() {
             assert_eq!(exp_ingr, &actual_ingredients[i]);
         }
     }
-
 
     //
     // STUBBING HELPERS
@@ -36,11 +41,13 @@ pub mod shared {
         let sandwich_id = if with_id { SANDWICH_ID } else { "" };
         let sandwich_name = SANDWICH_NAME;
 
-        let hot_dog = Sandwich::new(sandwich_id.to_string(),
-                                    sandwich_name.to_string(),
-                                    stub_ingredients(),
-                                    SANDWICH_TYPE)
-            .unwrap();
+        let hot_dog = Sandwich::new(
+            sandwich_id.to_string(),
+            sandwich_name.to_string(),
+            stub_ingredients(),
+            SANDWICH_TYPE,
+        )
+        .unwrap();
 
         hot_dog
     }

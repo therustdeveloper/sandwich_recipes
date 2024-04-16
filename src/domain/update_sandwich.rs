@@ -9,14 +9,29 @@ pub enum UpdateError {
 }
 
 // this is my port / use case
-pub fn update_sandwich<'a>(id: &'a str, name: &'a str, ingredients: &'a Vec<&str>, sandwich_type: &SandwichType) -> Result<Sandwich, UpdateError> {
+pub fn update_sandwich<'a>(
+    id: &'a str,
+    name: &'a str,
+    ingredients: &'a Vec<&str>,
+    sandwich_type: &SandwichType,
+) -> Result<Sandwich, UpdateError> {
     if id.is_empty() {
-        return Err(UpdateError::InvalidData(String::from("Cannot update without a target id")));
+        return Err(UpdateError::InvalidData(String::from(
+            "Cannot update without a target id",
+        )));
     }
 
-    let ingredients = ingredients.iter().map(|item| item.to_string()).collect::<Vec<String>>();
-    let sandwich = Sandwich::new(String::from(id), name.to_string(), ingredients, sandwich_type.clone())
-        .map_err(|e| UpdateError::InvalidData(e))?;
+    let ingredients = ingredients
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>();
+    let sandwich = Sandwich::new(
+        String::from(id),
+        name.to_string(),
+        ingredients,
+        sandwich_type.clone(),
+    )
+    .map_err(|e| UpdateError::InvalidData(e))?;
 
     Ok(sandwich)
 }
@@ -30,10 +45,14 @@ mod tests {
 
     #[test]
     fn should_update_an_existing_sandwich() {
-
-        let ingredients = vec!("ground meat", "cheese", "ketchup", "mayo");
-        let cheeseburger = update_sandwich(SANDWICH_ID,CHEESEBURGER_NAME, &ingredients, &SandwichType::Veggie)
-            .unwrap();
+        let ingredients = vec!["ground meat", "cheese", "ketchup", "mayo"];
+        let cheeseburger = update_sandwich(
+            SANDWICH_ID,
+            CHEESEBURGER_NAME,
+            &ingredients,
+            &SandwichType::Veggie,
+        )
+        .unwrap();
 
         assert_eq!(cheeseburger.name().value(), CHEESEBURGER_NAME);
 
