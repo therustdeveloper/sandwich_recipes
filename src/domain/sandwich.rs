@@ -2,6 +2,8 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+use crate::domain::Entity;
+
 // Sandwich Id
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SandwichId(Option<String>);
@@ -72,24 +74,23 @@ impl TryFrom<Vec<String>> for SandwichIngredients {
 pub enum SandwichType {
     Meat,
     Fish,
-    Veggie,
+    Veggie
 }
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sandwich {
     id: SandwichId,
     name: SandwichName,
     ingredients: SandwichIngredients,
-    sandwich_type: SandwichType,
+    sandwich_type: SandwichType
 }
 
+impl Entity for Sandwich {}
+
 impl Sandwich {
-    pub fn new(
-        id: String,
-        name: String,
-        ingredients: Vec<String>,
-        sandwich_type: SandwichType,
-    ) -> Result<Sandwich, String> {
+    pub fn new(id: String, name: String, ingredients: Vec<String>, sandwich_type: SandwichType) -> Result<Self, String> {
+
         let sandwich_id = SandwichId::try_from(id)?;
         let sandwich_name = SandwichName::try_from(name)?;
         let sandwich_ingrs = SandwichIngredients::try_from(ingredients)?;
@@ -98,7 +99,7 @@ impl Sandwich {
             id: sandwich_id,
             name: sandwich_name,
             ingredients: sandwich_ingrs,
-            sandwich_type,
+            sandwich_type
         })
     }
 
@@ -121,77 +122,52 @@ impl Sandwich {
 
 impl fmt::Display for Sandwich {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{} - {}",
-            match &self.id.0 {
-                Some(s) => s,
-                None => "",
-            },
-            self.name.0
-        )
+        write!(f, "{} - {}",
+               match &self.id.0 {
+                   Some(s) => s,
+                   None => ""
+               },
+               self.name.0)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::test_utils::shared::SANDWICH_TYPE;
+    use crate::tests::test_utils::shared::{assert_on_ingredients, SANDWICH_ID, SANDWICH_NAME, SANDWICH_TYPE, stub_ingredients};
 
     use super::*;
 
-    const SANDWICH_ID: &str = "sand-id";
-    const SANDWICH_NAME: &str = "Hot dog";
-
     #[test]
-    fn should_create_the_expected_sandwich() {
-        let ingredients = vec!["Wurst".to_string(), "Ketchup".to_string()];
+    fn should_create_and_print_the_expected_sandwich() {
 
-        let hot_dog = Sandwich::new(
-            SANDWICH_ID.to_string(),
-            SANDWICH_NAME.to_string(),
-            ingredients.clone(),
-            SANDWICH_TYPE,
-        )
-        .unwrap();
+        let hot_dog = Sandwich::new(SANDWICH_ID.to_string(),
+                                    SANDWICH_NAME.to_string(),
+                                    stub_ingredients(),
+                                    SANDWICH_TYPE)
+            .unwrap();
 
         assert_eq!(hot_dog.id().value().as_ref().unwrap(), SANDWICH_ID);
-        assert_eq!(
-            hot_dog.name,
-            SandwichName::try_from(SANDWICH_NAME.to_string()).unwrap()
-        );
-
-        assert_eq!(ingredients.len(), hot_dog.ingredients.value().len());
-
-        for (i, exp_ingr) in ingredients.iter().enumerate() {
-            assert_eq!(exp_ingr, &hot_dog.ingredients.value()[i]);
-        }
+        assert_eq!(hot_dog.name.value(), SANDWICH_NAME);
+        assert_on_ingredients(&stub_ingredients(), hot_dog.ingredients().value());
     }
 
     #[test]
     fn should_fail_without_a_name_or_ingredients() {
-        // without name
-        let err_sandwich = Sandwich::new(
-            "".to_string(),
-            "".to_string(),
-            vec!["Wurst".to_string(), "Ketchup".to_string()],
-            SANDWICH_TYPE,
-        );
+
+        let err_sandwich = Sandwich::new("".to_string(),
+                                         "".to_string(),
+                                         vec!["Wurst".to_string(), "Ketchup".to_string()],
+                                         SANDWICH_TYPE);
 
         assert_eq!(err_sandwich.is_err(), true);
         assert_eq!(err_sandwich.unwrap_err(), "Any sandwich must have a name");
 
-        // without at least 1 ingredient
-        let err_sandwich = Sandwich::new(
-            SANDWICH_ID.to_string(),
-            SANDWICH_NAME.to_string(),
-            vec![],
-            SANDWICH_TYPE,
-        );
+        let err_sandwich = Sandwich::new(SANDWICH_ID.to_string(),
+                                         SANDWICH_NAME.to_string(),
+                                         vec![],
+                                         SANDWICH_TYPE);
 
         assert_eq!(err_sandwich.is_err(), true);
-        assert_eq!(
-            err_sandwich.unwrap_err(),
-            "Any sandwich must have at least one ingredient"
-        );
+        assert_eq!(err_sandwich.unwrap_err(), "Any sandwich must have at least one ingredient");
     }
 }

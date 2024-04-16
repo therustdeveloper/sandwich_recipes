@@ -4,8 +4,8 @@ use validator::{Validate, ValidationErrors};
 use crate::driving::rest_handler::errors::ApiError;
 
 pub fn validate<T>(params: &Json<T>) -> Result<(), ApiError>
-where
-    T: Validate,
+    where
+        T: Validate,
 {
     match params.validate() {
         Ok(()) => Ok(()),

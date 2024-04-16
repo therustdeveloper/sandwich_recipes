@@ -1,4 +1,8 @@
-use crate::domain::sandwich::{Sandwich, SandwichType};
+use actix_web::web;
+
+use crate::domain::sandwich::Sandwich;
+use crate::driven::repository::{FindSandwich, RepoSelectError};
+use crate::Repository;
 
 #[derive(Debug)]
 pub enum FindOneError {
@@ -7,51 +11,52 @@ pub enum FindOneError {
 }
 
 // this is my port / use case
-pub fn find_one_sandwich<'a>(
-    id: &'a str,
-    name: &'a str,
-    ingredients: &'a Vec<&str>,
-) -> Result<Sandwich, FindOneError> {
-    let ingredients = ingredients
-        .iter()
-        .map(|item| item.to_string())
-        .collect::<Vec<String>>();
-    let sandwich = Sandwich::new(
-        id.to_string(),
-        if name.is_empty() {
-            "Hot dog".to_string()
-        } else {
-            name.to_string()
-        },
-        if ingredients.len() == 0 {
-            vec!["Wurst".to_string(), "Ketchup".to_string()]
-        } else {
-            ingredients
-        },
-        SandwichType::Meat,
-    )
-    .unwrap();
+pub async fn find_one_sandwich<'a, T: Repository<Sandwich>>(repository: web::Data<T>, id: &'a str, name: &'a str, ingredients: &'a Vec<&str>) -> Result<Sandwich, FindOneError> {
 
-    Ok(sandwich)
+    let ingredients = ingredients.iter().map(|item| item.to_string()).collect::<Vec<String>>();
+
+    let s = FindSandwich {
+        id: Some(String::from(id)),
+        name: String::from(name),
+        ingredients
+    };
+
+    repository.find_one(s).await
+        .map_err(|e| return match e {
+            RepoSelectError::Unknown(e) => FindOneError::Unknown(format!("Unknown error: {}", e)),
+            RepoSelectError::NotFound => FindOneError::NotFound
+        })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::helpers::string_vec_to_vec_str;
-    use crate::tests::test_utils::shared::{
-        assert_on_sandwich, stub_ingredients, stub_sandwich, SANDWICH_NAME,
-    };
+    use actix_web::web::Data;
+
+    use crate::tests::sandwich_repo_double::repo_doble::SandwichRepoDouble;
+    use crate::tests::test_utils::shared::{assert_on_sandwich, get_testing_persistence_config, SANDWICH_NAME, stub_sandwich};
 
     use super::*;
 
-    #[test]
-    fn should_find_the_expected_sandwich() {
-        let ingredients = stub_ingredients();
-        let ingredients = string_vec_to_vec_str(&ingredients);
+    #[actix_rt::test]
+    async fn should_find_the_expected_sandwich() {
 
-        match find_one_sandwich("", SANDWICH_NAME, &ingredients) {
-            Ok(s) => assert_on_sandwich(stub_sandwich(false), &s, false),
-            Err(_) => unreachable!(),
+        let repo = SandwichRepoDouble::new(&get_testing_persistence_config()).unwrap();
+
+        match find_one_sandwich(Data::new(repo), "", SANDWICH_NAME, &vec![]).await {
+            Ok(s) => assert_on_sandwich(s, &stub_sandwich(false), false),
+            Err(_) => unreachable!()
+        }
+    }
+
+    #[actix_rt::test]
+    async fn should_not_find_the_expected_sandwich() {
+
+        let mut repo = SandwichRepoDouble::new(&get_testing_persistence_config()).unwrap();
+        repo.set_error(true);
+
+        match find_one_sandwich(Data::new(repo), "", SANDWICH_NAME, &vec![]).await {
+            Err(_) => {},
+            Ok(_) => unreachable!()
         }
     }
 }
